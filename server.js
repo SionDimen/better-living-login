@@ -74,18 +74,27 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
     let event;
 
     try {
-        event = stripe.webhooks.constructEvent(
-            req.body,
-            sig,
-            process.env.STRIPE_WEBHOOK_SECRET
-        );
-        console.log('Webhook signature verification successful!');
+        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+        console.log('Webhook verified:', event.type); // Add this line
+
+        if (event.type === 'checkout.session.completed') {
+            const session = event.data.object;
+            console.log('Processing payment for:', session.customer_email); // Add this line
+            
+            try {
+                // Your existing payment processing code
+                console.log('Payment processed successfully'); // Add this line
+            } catch (error) {
+                console.error('Error processing payment:', error); // Add this line
+            }
+        }
+
+        res.json({received: true});
     } catch (err) {
-        console.error('Webhook Error:', err.message);
-        console.log('Signature received:', sig);
-        console.log('Webhook secret used:', process.env.STRIPE_WEBHOOK_SECRET);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+        console.error('Webhook Error:', err.message); // Add this line
+        res.status(400).send(`Webhook Error: ${err.message}`);
     }
+});
 
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
