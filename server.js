@@ -75,69 +75,49 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
 
     try {
         event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-        console.log('Webhook verified:', event.type); // Add this line
+        console.log('Webhook verified:', event.type);
 
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object;
-            console.log('Processing payment for:', session.customer_email); // Add this line
+            console.log('Processing payment for:', session.customer_email);
             
             try {
-                // Your existing payment processing code
-                console.log('Payment processed successfully'); // Add this line
+                // Generate a random password
+                const password = Math.random().toString(36).slice(-8);
+                const hashedPassword = await bcrypt.hash(password, 10);
+
+                // Save user to database
+                await pool.execute(
+                    'INSERT INTO users (email, password) VALUES (?, ?)',
+                    [session.customer_email, hashedPassword]
+                );
+
+                // Send email with credentials
+                const transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                        user: process.env.EMAIL_USER,
+                        pass: process.env.EMAIL_APP_PASSWORD
+                    }
+                });
+
+                await transporter.sendMail({
+                    from: process.env.EMAIL_USER,
+                    to: session.customer_email,
+                    subject: 'Your Login Credentials',
+                    text: `Thank you for your purchase! Here are your login credentials:\n\nEmail: ${session.customer_email}\nPassword: ${password}\n\nPlease login at: https://better-living-login.onrender.com`
+                });
+
+                console.log('Payment processed successfully');
             } catch (error) {
-                console.error('Error processing payment:', error); // Add this line
+                console.error('Error processing payment:', error);
+                throw error;
             }
         }
 
         res.json({received: true});
     } catch (err) {
-        console.error('Webhook Error:', err.message); // Add this line
+        console.error('Webhook Error:', err.message);
         res.status(400).send(`Webhook Error: ${err.message}`);
     }
 });
-
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        const customerEmail = session.customer_details.email;
-        
-        try {
-            // Generate password
-            const password = generatePassword();
-
-            // Save to database
-            await pool.execute(
-                'INSERT INTO users (email, password) VALUES (?, ?)',
-                [customerEmail, password]
-            );
-
-            // Send email
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: customerEmail,
-                subject: 'Your Login Credentials for BetterLiving',
-                html: `
-                    <h2>Thank you for your purchase!</h2>
-                    <p>Your login credentials are:</p>
-                    <p><strong>Email:</strong> ${customerEmail}</p>
-                    <p><strong>Password:</strong> ${password}</p>
-                    <p>You can login at: <a href="YOUR_LOGIN_PAGE_URL">Click here to login</a></p>
-                `
-            });
-
-        } catch (error) {
-            console.error('Error processing payment:', error);
-        }
-    }
-
-    res.json({ received: true });
-});
-
-// Use JSON parsing for all other routes
-app.use(express.json());
-
-// Generate random password
-function generatePassword() {
-    return Math.random().toString(36).slice(-8);
-}
-
-app.listen(3000, () => console.log('Server running on port 3000'));
