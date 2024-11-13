@@ -121,3 +121,8 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
         res.status(400).send(`Webhook Error: ${err.message}`);
     }
 });
+
+const port = process.env.PORT || 3000;
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on port ${port}`);
+});
