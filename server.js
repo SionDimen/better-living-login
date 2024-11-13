@@ -4,15 +4,19 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const mysql = require('mysql2/promise');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
+const bodyParser = require('body-parser');
 const getRawBody = require('raw-body');
 const session = require('express-session');  // Add this line
 const app = express();
 
-// Add session middleware
+// Middleware
+app.use(express.static('public'));
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
     secret: 'your-secret-key',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: true
 }));
 
 // Serve static files (create a 'public' folder for your HTML/CSS/JS files)
