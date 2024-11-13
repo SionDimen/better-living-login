@@ -40,24 +40,33 @@ const pool = mysql.createPool({
     connectTimeout: 60000
 });
 
-// Add these new endpoints before your webhook endpoint
-app.post('/login', express.json(), async (req, res) => {
-    const { email, password } = req.body;
-    
+app.post('/login', async (req, res) => {
     try {
+        const { email, password } = req.body;
+        console.log('Login attempt for:', email); // Add logging
+
         const [rows] = await pool.execute(
-            'SELECT * FROM users WHERE email = ? AND password = ?',
-            [email, password]
+            'SELECT * FROM users WHERE email = ?',
+            [email]
         );
+        console.log('Found user:', rows.length > 0); // Add logging
 
         if (rows.length > 0) {
-            req.session.user = { email: rows[0].email };
-            res.json({ success: true });
+            const user = rows[0];
+            const match = await bcrypt.compare(password, user.password);
+            console.log('Password match:', match); // Add logging
+
+            if (match) {
+                req.session.userId = user.id;
+                res.json({ success: true });
+            } else {
+                res.status(401).json({ success: false, message: 'Invalid credentials' });
+            }
         } else {
             res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('Login error:', error); // Add logging
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
