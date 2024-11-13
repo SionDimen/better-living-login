@@ -16,10 +16,10 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         const data = await response.json();
 
         if (data.success) {
-            window.location.href = '/dashboard.html';
-        } else {
-            alert('Invalid credentials');
-        }
+    window.location.href = '/dashboard.html';
+} else {
+    alert('Invalid credentials');
+}
     } catch (error) {
         console.error('Error:', error);
         alert('Server error');
