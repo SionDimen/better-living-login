@@ -3,6 +3,7 @@ const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const mysql = require('mysql2/promise');
 const nodemailer = require('nodemailer');
+const bcrypt = require('bcrypt');
 const getRawBody = require('raw-body');
 const session = require('express-session');  // Add this line
 const app = express();
