@@ -6,31 +6,37 @@
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to the Dashboard</h1>
-        <div id="protectedContent"></div>
-        <div class="button-container">
-            <a href="https://buy.stripe.com/test_dR68yQgbpejj4XS5kk" class="payment-button">Make a Payment</a>
-            <button onclick="logout()">Logout</button>
-        </div>
+        <h1>Welcome to Dashboard</h1>
+        <button onclick="logout()">Logout</button>
     </div>
 
     <script>
-        // Check if user is logged in
-        fetch('/protected-content')
-            .then(response => {
+        // Check login status when page loads
+        async function checkLogin() {
+            try {
+                const response = await fetch('/dashboard');
                 if (!response.ok) {
-                    window.location.href = '/';
+                    window.location.href = '/login.html';
                 }
-                return response.json();
-            })
-            .then(data => {
-                document.getElementById('protectedContent').textContent = data.content;
-            });
-
-        function logout() {
-            fetch('/logout', { method: 'POST' })
-                .then(() => window.location.href = '/');
+            } catch (error) {
+                console.error('Error:', error);
+                window.location.href = '/login.html';
+            }
         }
+
+        async function logout() {
+            try {
+                const response = await fetch('/logout', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        checkLogin();
     </script>
 </body>
 </html>
