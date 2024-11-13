@@ -14,13 +14,13 @@
         // Check login status when page loads
         async function checkLogin() {
             try {
-                const response = await fetch('/dashboard');
+                const response = await fetch('/check-session');
                 if (!response.ok) {
                     window.location.href = '/';
                 }
             } catch (error) {
                 console.error('Error:', error);
-                window.location.href = '/login.html';
+                window.location.href = '/';
             }
         }
 
@@ -36,7 +36,9 @@
             }
         }
 
+        // Check login status every 5 seconds
         checkLogin();
+        setInterval(checkLogin, 5000);
     </script>
 </body>
 </html>
