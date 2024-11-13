@@ -76,29 +76,33 @@ app.post('/logout', (req, res) => {
 
 // Use raw body for webhook endpoint
 app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) => {
+    console.log('Webhook received'); // Add this
     const sig = req.headers['stripe-signature'];
     let event;
 
     try {
+        console.log('Verifying webhook signature'); // Add this
         event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
         console.log('Webhook verified:', event.type);
 
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object;
+            console.log('Full session data:', session); // Add this
             console.log('Processing payment for:', session.customer_email);
             
             try {
-                // Generate a random password
+                console.log('Generating password'); // Add this
                 const password = Math.random().toString(36).slice(-8);
                 const hashedPassword = await bcrypt.hash(password, 10);
 
-                // Save user to database
+                console.log('Connecting to database'); // Add this
                 await pool.execute(
                     'INSERT INTO users (email, password) VALUES (?, ?)',
                     [session.customer_email, hashedPassword]
                 );
+                console.log('User saved to database'); // Add this
 
-                // Send email with credentials
+                console.log('Setting up email transport'); // Add this
                 const transporter = nodemailer.createTransport({
                     service: 'gmail',
                     auth: {
@@ -107,15 +111,18 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
                     }
                 });
 
+                console.log('Sending email'); // Add this
                 await transporter.sendMail({
                     from: process.env.EMAIL_USER,
                     to: session.customer_email,
                     subject: 'Your Login Credentials',
                     text: `Thank you for your purchase! Here are your login credentials:\n\nEmail: ${session.customer_email}\nPassword: ${password}\n\nPlease login at: https://better-living-login.onrender.com`
                 });
+                console.log('Email sent successfully'); // Add this
 
                 console.log('Payment processed successfully');
             } catch (error) {
+                console.error('Error details:', error); // Add this
                 console.error('Error processing payment:', error);
                 throw error;
             }
@@ -123,10 +130,12 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
 
         res.json({received: true});
     } catch (err) {
+        console.error('Full error details:', err); // Add this
         console.error('Webhook Error:', err.message);
         res.status(400).send(`Webhook Error: ${err.message}`);
     }
 });
+
 
 const port = process.env.PORT || 3000;
 app.listen(port, '0.0.0.0', () => {
