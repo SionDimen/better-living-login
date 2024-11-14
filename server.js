@@ -154,6 +154,72 @@ app.post('/logout', (req, res) => {
     res.json({ success: true });
 });
 
+app.get('/user-data', requireLogin, async (req, res) => {
+    try {
+        const [rows] = await pool.execute(
+            'SELECT email, created_at FROM users WHERE id = ?',
+            [req.session.userId]
+        );
+        
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            res.status(404).json({ error: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+}); 
+
+app.post('/change-password', requireLogin, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        
+        // Get user's current password from database
+        const [rows] = await pool.execute(
+            'SELECT password FROM users WHERE id = ?',
+            [req.session.userId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'User not found' 
+            });
+        }
+
+        // Verify current password
+        const match = await bcrypt.compare(currentPassword, rows[0].password);
+        if (!match) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Current password is incorrect' 
+            });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password in database
+        await pool.execute(
+            'UPDATE users SET password = ? WHERE id = ?',
+            [hashedPassword, req.session.userId]
+        );
+
+        res.json({ 
+            success: true, 
+            message: 'Password updated successfully' 
+        });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error' 
+        });
+    }
+});
+
 // 8. Start server
 const port = process.env.PORT || 3000;
 app.listen(port, '0.0.0.0', () => {
