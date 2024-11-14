@@ -4,12 +4,14 @@
     <title>Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* Container */
         .dashboard-container {
             padding: 20px;
             max-width: 1200px;
             margin: 0 auto;
         }
 
+        /* Header */
         .header {
             display: flex;
             justify-content: space-between;
@@ -17,6 +19,7 @@
             margin-bottom: 30px;
         }
 
+        /* Grid Layout */
         .content-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -24,13 +27,21 @@
             margin-bottom: 30px;
         }
 
+        /* Cards */
         .card {
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
         }
 
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Buttons */
         .logout-btn {
             background: #ff4444;
             color: white;
@@ -38,42 +49,126 @@
             padding: 10px 20px;
             border-radius: 4px;
             cursor: pointer;
+            transition: background 0.2s;
         }
 
         .logout-btn:hover {
             background: #ff0000;
         }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4444ff;
+            box-shadow: 0 0 0 2px rgba(68, 68, 255, 0.1);
+        }
+
+        /* Messages */
+        #passwordMessage {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            color: #666;
+        }
+
+        #passwordMessage.error {
+            color: #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        #passwordMessage.success {
+            color: #00aa00;
+            background: rgba(0, 170, 0, 0.1);
+        }
+
+        /* Submit Button */
+        button[type="submit"] {
+            background: #4444ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button[type="submit"]:hover {
+            background: #3333cc;
+        }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <div class="header">
-            <h1>Welcome to Your Dashboard</h1>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="header">
+        <h1>Welcome to Your Dashboard</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="content-grid">
+        <!-- Profile Card -->
+        <div class="card">
+            <h2>Your Profile</h2>
+            <p>Email: <span id="userEmail">Loading...</span></p>
+            <p>Member since: <span id="memberSince">Loading...</span></p>
         </div>
 
-        <div class="content-grid">
-            <div class="card">
-                <h2>Your Profile</h2>
-                <p>Email: <span id="userEmail">Loading...</span></p>
-                <p>Member since: <span id="memberSince">Loading...</span></p>
-            </div>
+        <!-- Quick Links Card -->
+        <div class="card">
+            <h2>Quick Links</h2>
+            <ul>
+                <li><a href="#">Link 1</a></li>
+                <li><a href="#">Link 2</a></li>
+                <li><a href="#">Link 3</a></li>
+            </ul>
+        </div>
 
-            <div class="card">
-                <h2>Quick Links</h2>
-                <ul>
-                    <li><a href="#">Link 1</a></li>
-                    <li><a href="#">Link 2</a></li>
-                    <li><a href="#">Link 3</a></li>
-                </ul>
-            </div>
+        <!-- Recent Activity Card -->
+        <div class="card">
+            <h2>Recent Activity</h2>
+            <p>No recent activity</p>
+        </div>
 
-            <div class="card">
-                <h2>Recent Activity</h2>
-                <p>No recent activity</p>
-            </div>
+        <!-- Change Password Card -->
+        <div class="card">
+            <h2>Change Password</h2>
+            <form id="changePasswordForm" onsubmit="changePassword(event)">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <button type="submit">Change Password</button>
+                <p id="passwordMessage"></p>
+            </form>
         </div>
     </div>
+</div>
+
 
     <script>
         async function checkLogin() {
@@ -99,6 +194,48 @@
                 console.error('Error:', error);
             }
         }
+        async function changePassword(event) {
+    event.preventDefault();
+    const messageElement = document.getElementById('passwordMessage');
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (newPassword !== confirmPassword) {
+        messageElement.textContent = 'New passwords do not match';
+        messageElement.className = 'error';
+        return;
+    }
+
+    try {
+        const response = await fetch('/change-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                currentPassword,
+                newPassword
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            messageElement.textContent = 'Password changed successfully';
+            messageElement.className = 'success';
+            document.getElementById('changePasswordForm').reset();
+        } else {
+            messageElement.textContent = data.message || 'Failed to change password';
+            messageElement.className = 'error';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        messageElement.textContent = 'Server error';
+        messageElement.className = 'error';
+    }
+}
 
         // Load user data
         async function loadUserData() {
