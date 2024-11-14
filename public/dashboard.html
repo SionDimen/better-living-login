@@ -3,15 +3,79 @@
 <head>
     <title>Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logout-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: #ff0000;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to Dashboard</h1>
-        <button onclick="logout()">Logout</button>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Welcome to Your Dashboard</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="content-grid">
+            <div class="card">
+                <h2>Your Profile</h2>
+                <p>Email: <span id="userEmail">Loading...</span></p>
+                <p>Member since: <span id="memberSince">Loading...</span></p>
+            </div>
+
+            <div class="card">
+                <h2>Quick Links</h2>
+                <ul>
+                    <li><a href="#">Link 1</a></li>
+                    <li><a href="#">Link 2</a></li>
+                    <li><a href="#">Link 3</a></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>Recent Activity</h2>
+                <p>No recent activity</p>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Check login status when page loads
         async function checkLogin() {
             try {
                 const response = await fetch('/check-session');
@@ -36,9 +100,24 @@
             }
         }
 
+        // Load user data
+        async function loadUserData() {
+            try {
+                const response = await fetch('/user-data');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('userEmail').textContent = data.email;
+                    document.getElementById('memberSince').textContent = new Date(data.created_at).toLocaleDateString();
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
         // Check login status every 5 seconds
         checkLogin();
         setInterval(checkLogin, 5000);
+        loadUserData();
     </script>
 </body>
 </html>
