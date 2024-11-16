@@ -1,20 +1,169 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Better Living Co. - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <form id="loginForm" class="login-form">
-            <h2>Login</h2>
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <button type="submit">Login</button>
-            <p id="message"></p>
-        </form>
+    <!-- Main wrapper -->
+    <div class="wrapper">
+        <!-- Video Background -->
+        <div class="video-container">
+            <video autoplay muted loop id="myVideo">
+                <source src="background.mp4" type="video/mp4">
+            </video>
+        </div>
+
+        <!-- Gradient Overlay -->
+        <div class="gradient-overlay"></div>
+
+        <!-- Content Layer -->
+        <div class="content-layer">
+            <!-- Navigation -->
+            <nav>
+                <a href="#" class="nav-link">Home</a>
+                <a href="#" class="nav-link">Help</a>
+            </nav>
+
+            <!-- Login Section -->
+            <main class="login-container">
+                <h1>Better Living Co.</h1>
+                <h2>Please login to your account</h2>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required>
+                        <a href="#" class="forgot-password" onclick="showForgotPassword(event)">Forgot your password?</a>
+                    </div>
+
+                    <button type="submit">LOGIN</button>
+
+                    <p class="signup-text">
+                        Not a member yet?
+                        <a href="#">Join here</a>
+                    </p>
+                </form>
+            </main>
+
+            <!-- Footer -->
+            <footer>
+                <div class="footer-item">
+                    <i class="fas fa-globe"></i>
+                    <span>Website</span>
+                    <a href="https://betterliving.com">betterliving.com</a>
+                </div>
+                <div class="footer-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>E-Mail</span>
+                    <a href="mailto:support@betterliving.com">support@betterliving.com</a>
+                </div>
+                <div class="bottom-text">
+                    <p>
+                        betterliving.com — All rights reserved © | 
+                        <a href="/terms">Terms and Conditions</a> | 
+                        <a href="/privacy">Privacy Policy</a>
+                    </p>
+                </div>
+            </footer>
+        </div>
     </div>
 
-    <script src="/login.js"></script>
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal">
+    <div class="modal-content">
+        <h3>Reset Password</h3>
+        <p>Enter your email address to receive password reset instructions.</p>
+        <input type="email" id="resetEmail" placeholder="Enter your email">
+        <button onclick="sendResetEmail()">Send Reset Link</button>
+        <div id="resetMessage"></div>
+    </div>
+</div>
+
+    <!-- Scripts -->
+    <script>
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = '/dashboard';
+                } else {
+                    alert(data.message || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred during login');
+            }
+        });
+
+        // Forgot password handlers
+        <script>
+    function showForgotPassword(event) {
+        event.preventDefault();
+        document.getElementById('forgotPasswordModal').style.display = 'flex';
+    }
+
+    async function sendResetEmail() {
+        const email = document.getElementById('resetEmail').value;
+        const messageDiv = document.getElementById('resetMessage');
+        
+        try {
+            const response = await fetch('/forgot-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                messageDiv.innerHTML = 'Password reset instructions have been sent to your email.';
+                messageDiv.style.color = 'green';
+                setTimeout(() => {
+                    document.getElementById('forgotPasswordModal').style.display = 'none';
+                }, 3000);
+            } else {
+                messageDiv.innerHTML = data.message || 'Failed to send reset email';
+                messageDiv.style.color = 'red';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            messageDiv.innerHTML = 'An error occurred while processing your request';
+            messageDiv.style.color = 'red';
+        }
+    }
+
+        // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('forgotPasswordModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
 </body>
 </html>
