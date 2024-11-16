@@ -8,6 +8,27 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const crypto = require('crypto');
 
+function generateStrongPassword(length = 12) {
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const numbers = '0123456789';
+    const all = uppercase + lowercase + numbers;
+    
+    let password = '';
+    // Ensure at least one of each character type
+    password += uppercase[Math.floor(Math.random() * uppercase.length)];
+    password += lowercase[Math.floor(Math.random() * lowercase.length)];
+    password += numbers[Math.floor(Math.random() * numbers.length)];
+    
+    // Fill the rest of the password
+    for (let i = password.length; i < length; i++) {
+        password += all[Math.floor(Math.random() * all.length)];
+    }
+    
+    // Shuffle the password
+    return password.split('').sort(() => Math.random() - 0.5).join('');
+}
+
 const app = express();
 
 // 1. Static files middleware
