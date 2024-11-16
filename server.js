@@ -327,6 +327,10 @@ app.get('/dashboard', requireLogin, (req, res) => {
     res.sendFile(__dirname + '/public/dashboard.html');
 });
 
+app.get('/courses', requireLogin, (req, res) => {
+    res.sendFile(__dirname + '/public/courses.html');
+});
+
 // 12. Session Management Routes
 app.get('/check-session', requireLogin, (req, res) => {
     res.json({ authenticated: true });
