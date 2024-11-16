@@ -328,7 +328,21 @@ app.get('/dashboard', requireLogin, (req, res) => {
 });
 
 app.get('/courses', requireLogin, (req, res) => {
-    res.sendFile(__dirname + '/public/courses.html');
+    try {
+
+        console.log('Attempting to serve courses page');
+        
+        const coursesPath = __dirname + '/public/courses.html';
+        if (!require('fs').existsSync(coursesPath)) {
+            console.error('Courses file not found at:', coursesPath);
+            return res.status(404).json({ success: false, message: 'Courses page not found' });
+        }
+        
+        res.sendFile(coursesPath);
+    } catch (error) {
+        console.error('Error serving courses page:', error);
+        res.status(500).json({ success: false, message: 'Error loading courses page' });
+    }
 });
 
 // 12. Session Management Routes
