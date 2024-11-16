@@ -88,13 +88,17 @@
 </div>
 
     <!-- Scripts -->
-    <script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
         // Login form handler
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('Login attempt started'); // Debug log
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            
+            console.log('Email:', email); // Debug log
             
             try {
                 const response = await fetch('/login', {
@@ -105,9 +109,13 @@
                     body: JSON.stringify({ email, password })
                 });
                 
+                console.log('Response received:', response.status); // Debug log
+                
                 const data = await response.json();
+                console.log('Data:', data); // Debug log
                 
                 if (data.success) {
+                    console.log('Login successful, redirecting...'); // Debug log
                     window.location.href = '/dashboard';
                 } else {
                     alert(data.message || 'Login failed');
@@ -117,9 +125,9 @@
                 alert('An error occurred during login');
             }
         });
+    });
 
-        // Forgot password handlers
-        <script>
+    // Forgot password handlers
     function showForgotPassword(event) {
         event.preventDefault();
         document.getElementById('forgotPasswordModal').style.display = 'flex';
@@ -157,7 +165,7 @@
         }
     }
 
-        // Close modal when clicking outside
+    // Close modal when clicking outside
     window.onclick = function(event) {
         const modal = document.getElementById('forgotPasswordModal');
         if (event.target === modal) {
