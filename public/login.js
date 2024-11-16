@@ -16,12 +16,14 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         const data = await response.json();
 
         if (data.success) {
-    window.location.href = '/dashboard.html';
-} else {
-    alert('Invalid credentials');
-}
+            // Redirect to dashboard after successful login
+            window.location.href = '/dashboard';
+        } else {
+            // Handle login error
+            alert('Login failed: ' + (data.message || 'Invalid credentials'));
+        }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Server error');
+        console.error('Login error:', error);
+        alert('Login failed. Please try again.');
     }
 });
