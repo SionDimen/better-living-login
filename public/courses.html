@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Better Living Co. - Courses</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .courses-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .course-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .course-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .course-content {
+            padding: 20px;
+        }
+
+        .course-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .course-description {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .enroll-button {
+            background: #4444ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .enroll-button:hover {
+            background: #3333cc;
+        }
+
+        .back-button {
+            background: #666;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .back-button:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="courses-container">
+        <div class="header">
+            <h1>Available Courses</h1>
+            <a href="/dashboard" class="back-button">Back to Dashboard</a>
+        </div>
+
+        <div class="courses-grid">
+            <!-- Example Course Card -->
+            <div class="course-card">
+                <img src="path-to-your-image.jpg" alt="Course 1" class="course-image">
+                <div class="course-content">
+                    <h2 class="course-title">Course Title</h2>
+                    <p class="course-description">Course description goes here. Explain what students will learn.</p>
+                    <button class="enroll-button">Enroll Now</button>
+                </div>
+            </div>
+            <!-- Add more course cards as needed -->
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        async function checkLogin() {
+            try {
+                const response = await fetch('/check-session');
+                if (!response.ok) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                window.location.href = '/';
+            }
+        }
+
+        checkLogin();
+        setInterval(checkLogin, 5000);
+    </script>
+</body>
+</html>
