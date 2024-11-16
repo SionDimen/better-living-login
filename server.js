@@ -32,7 +32,7 @@ const pool = new Pool({
     }
 });
 
-// 4. Webhook route (must be before body parsers)
+// 4. Webhook route 
 app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) => {
     console.log('Webhook received');
     const sig = req.headers['stripe-signature'];
@@ -50,7 +50,7 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
             
             try {
                 console.log('Generating password');
-                const password = Math.random().toString(36).slice(-8);
+                const password = generateStrongPassword(12);
                 const hashedPassword = await bcrypt.hash(password, 10);
 
                 console.log('Connecting to database');
@@ -74,7 +74,17 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
                     from: process.env.EMAIL_USER,
                     to: customerEmail,
                     subject: 'Your Login Credentials',
-                    text: `Thank you for your purchase! Here are your login credentials:\n\nEmail: ${customerEmail}\nPassword: ${password}\n\nPlease login at: ${process.env.SITE_URL}`
+                    html: `
+                        <h1>Welcome to Better Living Co.!</h1>
+                        <p>Thank you for your purchase! Here are your login credentials:</p>
+                        <p><strong>Email:</strong> ${customerEmail}</p>
+                        <p><strong>Password:</strong> ${password}</p>
+                        <p>Please login at: ${process.env.SITE_URL}</p>
+                        <p>We recommend changing your password after your first login.</p>
+                        <br>
+                        <p>Best regards,</p>
+                        <p>Better Living Co. Team</p>
+                    `
                 });
                 console.log('Email sent successfully');
                 console.log('Payment processed successfully');
