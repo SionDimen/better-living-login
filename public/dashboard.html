@@ -115,6 +115,24 @@
         button[type="submit"]:hover {
             background: #3333cc;
         }
+        .course-link {
+            padding: 10px 0;
+        }
+
+        .course-button {
+            display: block;
+            background: #4444ff;
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .course-button:hover {
+            background: #3333cc;
+        }
     </style>
 </head>
 <body>
@@ -132,15 +150,15 @@
             <p>Member since: <span id="memberSince">Loading...</span></p>
         </div>
 
-        <!-- Quick Links Card -->
-        <div class="card">
-            <h2>Quick Links</h2>
-            <ul>
-                <li><a href="#">Link 1</a></li>
-                <li><a href="#">Link 2</a></li>
-                <li><a href="#">Link 3</a></li>
-            </ul>
+        <!-- Courses Card -->
+    <div class="card">
+        <h2>Courses</h2>
+        <div class="course-link">
+            <a href="/courses" class="course-button">
+                View Available Courses
+             </a>
         </div>
+    </div>
 
         <!-- Recent Activity Card -->
         <div class="card">
