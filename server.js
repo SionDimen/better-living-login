@@ -34,7 +34,7 @@ const pool = new Pool({
 
 // 4. Webhook route 
 app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) => {
-    console.log('Webhook received');
+    console.log('Webhook received at:', new Date().toISOString());
     const sig = req.headers['stripe-signature'];
     let event;
 
@@ -49,18 +49,28 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
             console.log('Processing payment for:', customerEmail);
             
             try {
+                // Test email configuration
+                console.log('Email configuration:', {
+                    user: process.env.EMAIL_USER,
+                    // Don't log the actual password
+                    hasPassword: !!process.env.EMAIL_APP_PASSWORD
+                });
+
                 console.log('Generating password');
                 const password = generateStrongPassword(12);
-                const hashedPassword = await bcrypt.hash(password, 10);
+                console.log('Password generated successfully');
 
-                console.log('Connecting to database');
+                const hashedPassword = await bcrypt.hash(password, 10);
+                console.log('Password hashed successfully');
+
+                console.log('Saving to database...');
                 await pool.query(
                     'INSERT INTO users (email, password) VALUES ($1, $2)',
                     [customerEmail, hashedPassword]
                 );
-                console.log('User saved to database');
+                console.log('User saved to database successfully');
 
-                console.log('Setting up email transport');
+                console.log('Creating email transporter...');
                 const transporter = nodemailer.createTransport({
                     service: 'gmail',
                     auth: {
@@ -69,8 +79,8 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
                     }
                 });
 
-                console.log('Sending email');
-                await transporter.sendMail({
+                console.log('Sending email...');
+                const emailResult = await transporter.sendMail({
                     from: process.env.EMAIL_USER,
                     to: customerEmail,
                     subject: 'Your Login Credentials',
@@ -86,18 +96,23 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
                         <p>Better Living Co. Team</p>
                     `
                 });
-                console.log('Email sent successfully');
-                console.log('Payment processed successfully');
+                console.log('Email sent successfully:', emailResult);
             } catch (error) {
-                console.error('Error details:', error);
-                console.error('Error processing payment:', error);
+                console.error('Detailed error:', {
+                    message: error.message,
+                    stack: error.stack,
+                    code: error.code
+                });
                 throw error;
             }
         }
         res.json({received: true});
     } catch (err) {
-        console.error('Full error details:', err);
-        console.error('Webhook Error:', err.message);
+        console.error('Webhook Error:', {
+            message: err.message,
+            stack: err.stack,
+            code: err.code
+        });
         res.status(400).send(`Webhook Error: ${err.message}`);
     }
 });
