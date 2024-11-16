@@ -205,6 +205,11 @@ button[type="submit"] {
     margin-bottom: 1rem;
 }
 
+.modal-content p {
+    color: var(--white);
+    margin-bottom: 1rem;
+}
+
 .modal-content input {
     width: 100%;
     padding: 0.8rem;
