@@ -248,11 +248,12 @@ app.post('/forgot-password', async (req, res) => {
             });
         }
 
-        res.json({ success: true, message: 'If an account exists, you will receive reset instructions.' });
+                res.json({ success: true, message: 'If an account exists, you will receive reset instructions.' });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ success: false, message: 'Server error' });
     }
+});
 app.post('/refresh-session', async (req, res) => {
     if (req.session.userId) {
         // Extend the session
