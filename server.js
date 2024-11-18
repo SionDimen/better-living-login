@@ -37,11 +37,11 @@ app.use(express.static('public'));
 // 2. Session middleware with cookie settings
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    resave: true, 
-    saveUninitialized: true, 
+    resave: true,
+    saveUninitialized: true,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        secure: false,  // Changed from true to false
+        maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
         sameSite: 'lax'
     },
@@ -168,9 +168,13 @@ initDatabase();
 
 // 7. Login protection middleware
 const requireLogin = (req, res, next) => {
+    console.log('Session in requireLogin:', req.session);
+    console.log('UserId in session:', req.session.userId);
+    
     if (req.session.userId) {
         next();
     } else {
+        console.log('No userId in session - redirecting to login');
         res.status(401).json({ success: false, message: 'Please log in' });
     }
 };
@@ -401,6 +405,7 @@ app.get('/privacy', (req, res) => {
 });
 
 app.get('/dashboard', requireLogin, (req, res) => {
+    console.log('Accessing dashboard. Session:', req.session);
     res.sendFile(__dirname + '/public/dashboard.html');
 });
 
