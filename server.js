@@ -239,6 +239,72 @@ app.post('/login', async (req, res) => {
         console.error('Login error:', error);
         res.status(500).json({ success: false, message: 'Server error' });
     }
+app.post('/login', async (req, res) => {
+    try {
+        const { email, password, token } = req.body;
+        console.log('Login attempt for:', email);
+
+        const result = await pool.query(
+            'SELECT * FROM users WHERE email = $1',
+            [email]
+        );
+
+        if (result.rows.length > 0) {
+            const user = result.rows[0];
+            const match = await bcrypt.compare(password, user.password);
+
+            if (match) {
+                // Check if 2FA is enabled
+                if (user.two_factor_enabled) {
+                    if (!token) {
+                        // If 2FA is enabled but no token provided, return need2FA flag
+                        return res.json({ 
+                            success: false, 
+                            need2FA: true 
+                        });
+                    }
+
+                    // Verify 2FA token
+                    const verified = speakeasy.totp.verify({
+                        secret: user.two_factor_secret,
+                        encoding: 'base32',
+                        token: token
+                    });
+
+                    if (!verified) {
+                        return res.status(401).json({ 
+                            success: false, 
+                            message: 'Invalid 2FA code' 
+                        });
+                    }
+                }
+
+                // If 2FA verified or not required, proceed with login
+                req.session.userId = user.id;
+                await new Promise((resolve, reject) => {
+                    req.session.save((err) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+
+                res.json({ 
+                    success: true,
+                    redirectUrl: '/dashboard'
+                });
+            } else {
+                res.status(401).json({ success: false, message: 'Invalid credentials' });
+            }
+        } else {
+            res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
 });
 
 // 2FA Routes
