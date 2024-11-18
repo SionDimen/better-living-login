@@ -193,7 +193,7 @@ const requireLogin = (req, res, next) => {
 // 8. Authentication Routes
 app.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, token } = req.body;
         console.log('Login attempt for:', email);
 
         const result = await pool.query(
@@ -206,52 +206,6 @@ app.post('/login', async (req, res) => {
             const user = result.rows[0];
             const match = await bcrypt.compare(password, user.password);
             console.log('Password match:', match);
-
-            if (match) {
-                // Set session
-                req.session.userId = user.id;
-                console.log('Session set:', req.session);
-                
-                // Wait for session to be saved
-                await new Promise((resolve, reject) => {
-                    req.session.save((err) => {
-                        if (err) {
-                            console.error('Session save error:', err);
-                            reject(err);
-                        } else {
-                            resolve();
-                        }
-                    });
-                });
-
-                console.log('Session saved successfully');
-                res.json({ 
-                    success: true,
-                    redirectUrl: '/dashboard'  // Add explicit redirect URL
-                });
-            } else {
-                res.status(401).json({ success: false, message: 'Invalid credentials' });
-            }
-        } else {
-            res.status(401).json({ success: false, message: 'Invalid credentials' });
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
-    }
-app.post('/login', async (req, res) => {
-    try {
-        const { email, password, token } = req.body;
-        console.log('Login attempt for:', email);
-
-        const result = await pool.query(
-            'SELECT * FROM users WHERE email = $1',
-            [email]
-        );
-
-        if (result.rows.length > 0) {
-            const user = result.rows[0];
-            const match = await bcrypt.compare(password, user.password);
 
             if (match) {
                 // Check if 2FA is enabled
@@ -279,11 +233,15 @@ app.post('/login', async (req, res) => {
                     }
                 }
 
-                // If 2FA verified or not required, proceed with login
+                // Set session
                 req.session.userId = user.id;
+                console.log('Session set:', req.session);
+                
+                // Wait for session to be saved
                 await new Promise((resolve, reject) => {
                     req.session.save((err) => {
                         if (err) {
+                            console.error('Session save error:', err);
                             reject(err);
                         } else {
                             resolve();
@@ -291,6 +249,7 @@ app.post('/login', async (req, res) => {
                     });
                 });
 
+                console.log('Session saved successfully');
                 res.json({ 
                     success: true,
                     redirectUrl: '/dashboard'
