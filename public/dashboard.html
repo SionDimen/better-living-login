@@ -145,14 +145,44 @@
     margin: 10px 0;
 }
 
+/* Additional 2FA Styles */
+.tfa-content {
+    padding: 10px 0;
+}
+
+.tfa-button {
+    width: 100%;
+    margin: 10px 0;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
 #enable2FA {
     background: #4444ff;
     color: white;
 }
 
+#enable2FA:hover {
+    background: #3333cc;
+}
+
 #disable2FA {
     background: #ff4444;
     color: white;
+}
+
+#disable2FA:hover {
+    background: #cc3333;
+}
+
+.tfa-status {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
 }
 
 .modal {
@@ -216,14 +246,18 @@
             <p>No recent activity</p>
         </div>
     
-        <!-- 2FA Card -->
-    <div class="card">
-        <h2>Two-Factor Authentication</h2>
+       <!-- 2FA Card -->
+<div class="card">
+    <h2>Two-Factor Authentication</h2>
+    <div class="tfa-content">
+        <p>Enhance your account security with two-factor authentication.</p>
         <div id="twoFactorStatus">
-            <button id="enable2FA" style="display: none;">Enable 2FA</button>
-            <button id="disable2FA" style="display: none;">Disable 2FA</button>
+            <button id="enable2FA" class="tfa-button" style="display: none;">Enable 2FA</button>
+            <button id="disable2FA" class="tfa-button" style="display: none;">Disable 2FA</button>
         </div>
+        <p class="tfa-status" id="tfaStatusText"></p>
     </div>
+</div>
 
         <!-- Change Password Card -->
         <div class="card">
@@ -353,13 +387,18 @@ async function check2FAStatus() {
         
         const enable2FABtn = document.getElementById('enable2FA');
         const disable2FABtn = document.getElementById('disable2FA');
+        const statusText = document.getElementById('tfaStatusText');
         
         if (data.enabled) {
             enable2FABtn.style.display = 'none';
             disable2FABtn.style.display = 'block';
+            statusText.textContent = '2FA is currently enabled';
+            statusText.style.color = '#00aa00';
         } else {
             enable2FABtn.style.display = 'block';
             disable2FABtn.style.display = 'none';
+            statusText.textContent = '2FA is currently disabled';
+            statusText.style.color = '#666';
         }
     } catch (error) {
         console.error('Error checking 2FA status:', error);
