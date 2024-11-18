@@ -37,15 +37,15 @@ app.use(express.static('public'));
 // 2. Session middleware with cookie settings
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
+    resave: true, 
+    saveUninitialized: true, 
     cookie: { 
         secure: process.env.NODE_ENV === 'production',
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         httpOnly: true,
         sameSite: 'lax'
     },
-    rolling: true, // Resets the cookie expiration on every response
+    rolling: true
 }));
 
 // 3. Database connection
@@ -193,8 +193,27 @@ app.post('/login', async (req, res) => {
             console.log('Password match:', match);
 
             if (match) {
+                // Set session
                 req.session.userId = user.id;
-                res.json({ success: true });
+                console.log('Session set:', req.session);
+                
+                // Wait for session to be saved
+                await new Promise((resolve, reject) => {
+                    req.session.save((err) => {
+                        if (err) {
+                            console.error('Session save error:', err);
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+
+                console.log('Session saved successfully');
+                res.json({ 
+                    success: true,
+                    redirectUrl: '/dashboard'  // Add explicit redirect URL
+                });
             } else {
                 res.status(401).json({ success: false, message: 'Invalid credentials' });
             }
