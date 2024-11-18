@@ -27,36 +27,164 @@
         }
 
         .course-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: transform 0.2s;
-        }
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: 20px;
+}
 
-        .course-card:hover {
-            transform: translateY(-5px);
-        }
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
 
-        .course-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
+.course-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 1px solid #eee;
+}
 
-        .course-content {
-            padding: 20px;
-        }
+.course-content {
+    padding: 25px;
+}
 
-        .course-title {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
+.course-title {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
 
-        .course-description {
-            color: #666;
-            margin-bottom: 20px;
-        }
+.course-description {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.course-description ul {
+    margin-top: 10px;
+    padding-left: 20px;
+}
+
+.course-description li {
+    margin-bottom: 8px;
+    position: relative;
+    padding-left: 20px;
+}
+
+.course-description li:before {
+    content: "•";
+    color: #4444ff;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+.start-course-button {
+    display: inline-block;
+    background: #4444ff;
+    color: white;
+    text-decoration: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s;
+    text-align: center;
+    width: 100%;
+}
+
+.start-course-button:hover {
+    background: #3333cc;
+    transform: translateY(-2px);
+}
+
+.new-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #ff4444;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.course-image-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.course-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.course-card:hover .course-image {
+    transform: scale(1.05);
+}
+
+.topics-title {
+    font-size: 1.1rem;
+    color: #444;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.course-topics {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.course-topics ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.course-topics li {
+    padding-left: 25px;
+    position: relative;
+    margin-bottom: 12px;
+    color: #555;
+}
+
+.course-topics li:before {
+    content: "✓";
+    color: #4444ff;
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+.button-icon {
+    margin-left: 8px;
+    transition: transform 0.3s;
+}
+
+.start-course-button:hover .button-icon {
+    transform: translateX(5px);
+}
+
+.new-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #ff4444;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(255, 68, 68, 0.3);
+}
 
         .enroll-button {
             background: #4444ff;
@@ -107,6 +235,24 @@
         </div>
     </div>
 
+    <!-- Course Card -->
+    <div class="course-card">
+        <img src="/images/mindset-course.jpg" alt="Mindset Mastery" class="course-image">
+        <div class="course-content">
+            <h2 class="course-title">Mindset Mastery</h2>
+            <p class="course-description">
+            Transform your mindset and unlock your full potential. In this comprehensive course, you'll learn:
+            <ul>
+                <li>Understanding limiting beliefs and how to overcome them</li>
+                <li>Developing a growth mindset for success</li>
+                <li>Building resilience and mental strength</li>
+                <li>Creating powerful daily habits</li>
+            </ul>
+           </p>
+        <a href="/mindset-course" class="start-course-button">Start Course</a>
+      </div>
+   </div>
+
     <!-- Course Card 2 -->
     <div class="course-card">
          <img src="/images/course2-image.jpg" alt="Course 2" class="course-image">
@@ -115,6 +261,32 @@
             <p class="course-description">Description of your second course. Explain what students will learn.</p>
             <a href="/course2" class="start-course-button">Start Course</a>
         </div>
+    </div>
+</div>
+
+<div class="course-card">
+    <div class="course-image-container">
+        <img src="/images/procrastination-course.jpg" alt="Procrastination Course" class="course-image">
+        <span class="new-badge">New!</span>
+    </div>
+    <div class="course-content">
+        <h2 class="course-title">The Hidden Cost of Procrastination: Why You're Stuck and How to Break Free</h2>
+        <p class="course-description">
+            Why most people are lazy and how is it secretly ruining your life. Powerful methods to conquer procrastination once and for all.
+        </p>
+        <div class="course-topics">
+            <h3 class="topics-title">What You'll Learn:</h3>
+            <ul>
+                <li>The Psychology Behind Procrastination: A Battle of the Mind</li>
+                <li>The Procrastination-Perfectionism Trap</li>
+                <li>The Instant Gratification Trap: How Modern Society Fuels Procrastination</li>
+                <li>The Procrastination–Self-Esteem Feedback Loop</li>
+            </ul>
+        </div>
+        <a href="/procrastination-course" class="start-course-button">
+            Start Course
+            <span class="button-icon">→</span>
+        </a>
     </div>
 </div>
 
