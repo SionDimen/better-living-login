@@ -36,13 +36,16 @@ app.use(express.static('public'));
 
 // 2. Session middleware with cookie settings
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
-    cookie: {
-        secure: false, 
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
+    saveUninitialized: false,
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        httpOnly: true,
+        sameSite: 'lax'
+    },
+    rolling: true, // Resets the cookie expiration on every response
 }));
 
 // 3. Database connection
@@ -250,6 +253,14 @@ app.post('/forgot-password', async (req, res) => {
         console.error('Error:', error);
         res.status(500).json({ success: false, message: 'Server error' });
     }
+app.post('/refresh-session', async (req, res) => {
+    if (req.session.userId) {
+        // Extend the session
+        req.session.touch();
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ success: false });
+    }
 });
 
 // 9. Password Reset Routes
@@ -411,11 +422,20 @@ app.post('/logout', (req, res) => {
 
 // 13. Error handling middleware
 app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
-    res.status(500).json({ 
-        success: false, 
-        message: 'An unexpected error occurred' 
-    });
+    console.error('Error:', err);
+    if (err.name === 'TokenExpiredError') {
+        // Handle session expiration gracefully
+        res.status(440).json({ 
+            success: false, 
+            message: 'Session expired', 
+            shouldReconnect: true 
+        });
+    } else {
+        res.status(500).json({ 
+            success: false, 
+            message: 'An unexpected error occurred' 
+        });
+    }
 });
 
 // 14. Start server
