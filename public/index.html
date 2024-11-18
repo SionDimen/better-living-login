@@ -92,38 +92,42 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Login form handler
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    console.log('Login attempt started');
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    try {
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password }),
-            credentials: 'same-origin'  // Add this line
+            e.preventDefault();
+            console.log('Login attempt started');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                console.log('Sending login request...');
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'same-origin'
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers));
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok && data.success) {
+                    console.log('Login successful, attempting redirect...');
+                    window.location.href = '/dashboard';
+                } else {
+                    console.log('Login failed:', data.message);
+                    alert(data.message || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('An error occurred during login');
+            }
         });
-        
-        console.log('Response received:', response.status);
-        
-        const data = await response.json();
-        console.log('Data:', data);
-        
-        if (data.success) {
-            console.log('Login successful, redirecting...');
-            window.location.href = data.redirectUrl || '/dashboard';
-        } else {
-            alert(data.message || 'Login failed');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred during login');
-    }
-});
+    });
 
     // Forgot password handlers
     function showForgotPassword(event) {
