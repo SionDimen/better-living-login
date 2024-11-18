@@ -305,9 +305,40 @@
                 window.location.href = '/';
             }
         }
+async function handleSessionError(response) {
+    if (response.status === 440) {
+        const data = await response.json();
+        if (data.shouldReconnect) {
+            // Attempt to refresh the session
+            try {
+                const refreshResponse = await fetch('/refresh-session');
+                if (refreshResponse.ok) {
+                    window.location.reload();
+                    return;
+                }
+            } catch (error) {
+                console.error('Session refresh failed:', error);
+            }
+        }
+        window.location.href = '/';
+    }
+}
 
-        checkLogin();
-        setInterval(checkLogin, 5000);
-    </script>
+async function checkLogin() {
+    try {
+        const response = await fetch('/check-session');
+        if (!response.ok) {
+            await handleSessionError(response);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+    // Check login status every 5 seconds
+    checkLogin();
+    setInterval(checkLogin, 5000);
+    loadUserData();
+</script>
 </body>
 </html>

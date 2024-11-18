@@ -150,6 +150,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // 6. Initialize database
 async function initDatabase() {
     try {
+        // Create users table if it doesn't exist
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -160,21 +161,15 @@ async function initDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('Database initialized successfully');
-    } catch (error) {
-        console.error('Database initialization error:', error);
-    }
-}
+        console.log('Base table initialized successfully');
 
-async function initDatabase() {
-    try {
         // Add 2FA columns if they don't exist
         await pool.query(`
             ALTER TABLE users 
             ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE,
             ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255)
         `);
-        console.log('Database initialized with 2FA columns');
+        console.log('2FA columns initialized successfully');
     } catch (error) {
         console.error('Database initialization error:', error);
     }

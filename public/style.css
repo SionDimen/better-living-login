@@ -247,3 +247,31 @@ footer {
     color: var(--white);
     text-decoration: none;
 }
+
+.start-course-button {
+    display: block;
+    background: #4444ff;
+    color: white;
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    text-align: center;
+    transition: background 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.start-course-button:hover {
+    background: #3333cc;
+}
+
+.course-title {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.course-description {
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
