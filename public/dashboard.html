@@ -381,13 +381,23 @@ async function handleSessionError(response) {
 
 // 2FA Functions
 async function check2FAStatus() {
+    console.log('Checking 2FA status...'); // Debug log
     try {
         const response = await fetch('/user-2fa-status');
+        console.log('2FA status response:', response.status); // Debug log
+        
         const data = await response.json();
+        console.log('2FA status data:', data); // Debug log
         
         const enable2FABtn = document.getElementById('enable2FA');
         const disable2FABtn = document.getElementById('disable2FA');
         const statusText = document.getElementById('tfaStatusText');
+        
+        console.log('Found elements:', { // Debug log
+            enable2FABtn: !!enable2FABtn,
+            disable2FABtn: !!disable2FABtn,
+            statusText: !!statusText
+        });
         
         if (data.enabled) {
             enable2FABtn.style.display = 'none';
@@ -400,6 +410,7 @@ async function check2FAStatus() {
             statusText.textContent = '2FA is currently disabled';
             statusText.style.color = '#666';
         }
+        console.log('2FA status updated successfully'); // Debug log
     } catch (error) {
         console.error('Error checking 2FA status:', error);
     }
@@ -447,21 +458,55 @@ function closeSetup2FA() {
     document.getElementById('setup2FAModal').style.display = 'none';
 }
 
-document.getElementById('enable2FA').addEventListener('click', enable2FA);
-document.getElementById('disable2FA').addEventListener('click', async () => {
-    if (confirm('Are you sure you want to disable 2FA?')) {
-        try {
-            const response = await fetch('/disable-2fa', { method: 'POST' });
-            const data = await response.json();
-            if (data.success) {
-                alert('2FA disabled successfully');
-                check2FAStatus();
-            }
-        } catch (error) {
-            console.error('Error disabling 2FA:', error);
-            alert('Error disabling 2FA');
-        }
+// Initialize everything when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Page loaded, initializing 2FA...');
+    
+    // Add event listeners
+    const enable2FABtn = document.getElementById('enable2FA');
+    const disable2FABtn = document.getElementById('disable2FA');
+    
+    if (enable2FABtn) {
+        enable2FABtn.addEventListener('click', enable2FA);
     }
+    
+    if (disable2FABtn) {
+        disable2FABtn.addEventListener('click', async () => {
+            if (confirm('Are you sure you want to disable 2FA?')) {
+                try {
+                    const response = await fetch('/disable-2fa', { method: 'POST' });
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('2FA disabled successfully');
+                        check2FAStatus();
+                    }
+                } catch (error) {
+                    console.error('Error disabling 2FA:', error);
+                    alert('Error disabling 2FA');
+                }
+            }
+        });
+    }
+    
+    // Check initial 2FA status
+    check2FAStatus();
+    
+    // Load user data
+    loadUserData();
+});
+
+async function loadUserData() {
+    try {
+        const response = await fetch('/user-data');
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('userEmail').textContent = data.email;
+            document.getElementById('memberSince').textContent = new Date(data.created_at).toLocaleDateString();
+        }
+    } catch (error) {
+        console.error('Error loading user data:', error);
+    }
+}
 });
 
 // Check 2FA status on page load
@@ -479,6 +524,8 @@ check2FAStatus();
                 console.error('Error loading user data:', error);
             }
         }
+    }
+});
 
         // Check login status every 5 seconds
         checkLogin();
