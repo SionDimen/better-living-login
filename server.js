@@ -7,6 +7,8 @@ const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const crypto = require('crypto');
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
 
 function generateStrongPassword(length = 12) {
     const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -164,6 +166,20 @@ async function initDatabase() {
     }
 }
 
+async function initDatabase() {
+    try {
+        // Add 2FA columns if they don't exist
+        await pool.query(`
+            ALTER TABLE users 
+            ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE,
+            ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255)
+        `);
+        console.log('Database initialized with 2FA columns');
+    } catch (error) {
+        console.error('Database initialization error:', error);
+    }
+}
+
 initDatabase();
 
 // 7. Login protection middleware
@@ -227,6 +243,96 @@ app.post('/login', async (req, res) => {
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
+// 2FA Routes
+app.get('/user-2fa-status', requireLogin, async (req, res) => {
+    try {
+        console.log('Checking 2FA status for user:', req.session.userId);
+        const result = await pool.query(
+            'SELECT two_factor_enabled FROM users WHERE id = $1',
+            [req.session.userId]
+        );
+        console.log('2FA status result:', result.rows[0]);
+        
+        res.json({
+            enabled: result.rows[0]?.two_factor_enabled || false
+        });
+    } catch (error) {
+        console.error('Error checking 2FA status:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/enable-2fa', requireLogin, async (req, res) => {
+    try {
+        // Generate secret
+        const secret = speakeasy.generateSecret({
+            name: "Better Living Co."
+        });
+
+        // Save secret to database
+        await pool.query(
+            'UPDATE users SET two_factor_secret = $1 WHERE id = $2',
+            [secret.base32, req.session.userId]
+        );
+
+        // Generate QR code
+        const qrCode = await QRCode.toDataURL(secret.otpauth_url);
+
+        res.json({
+            success: true,
+            qrCode: qrCode,
+            secret: secret.base32
+        });
+    } catch (error) {
+        console.error('2FA Enable Error:', error);
+        res.status(500).json({ success: false, message: 'Error enabling 2FA' });
+    }
+});
+
+app.post('/verify-2fa', requireLogin, async (req, res) => {
+    try {
+        const { token } = req.body;
+        
+        // Get user's secret
+        const result = await pool.query(
+            'SELECT two_factor_secret FROM users WHERE id = $1',
+            [req.session.userId]
+        );
+
+        const verified = speakeasy.totp.verify({
+            secret: result.rows[0].two_factor_secret,
+            encoding: 'base32',
+            token: token
+        });
+
+        if (verified) {
+            await pool.query(
+                'UPDATE users SET two_factor_enabled = true WHERE id = $1',
+                [req.session.userId]
+            );
+            res.json({ success: true });
+        } else {
+            res.status(400).json({ success: false, message: 'Invalid code' });
+        }
+    } catch (error) {
+        console.error('2FA Verification Error:', error);
+        res.status(500).json({ success: false, message: 'Error verifying 2FA' });
+    }
+});
+
+app.post('/disable-2fa', requireLogin, async (req, res) => {
+    try {
+        await pool.query(
+            'UPDATE users SET two_factor_enabled = false, two_factor_secret = null WHERE id = $1',
+            [req.session.userId]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        console.error('2FA Disable Error:', error);
+        res.status(500).json({ success: false, message: 'Error disabling 2FA' });
     }
 });
 
