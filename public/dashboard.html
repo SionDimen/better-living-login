@@ -292,53 +292,53 @@
             </div>
 
             <!-- Change Password Card -->
-<div class="card">
-    <h2>Change Password</h2>
-    
-    <div class="password-requirements">
-        <h4>Password Requirements:</h4>
-        <ul>
-            <li>At least 8 characters long</li>
-            <li>At least one uppercase letter</li>
-            <li>At least one lowercase letter</li>
-            <li>At least one number</li>
-            <li>At least one special character (!@#$%^&*(),.?":{}|<>)</li>
-        </ul>
-    </div>
+        <div class="card">
+            <h2>Change Password</h2>
+            
+            <div class="password-requirements">
+                <h4>Password Requirements:</h4>
+                <ul>
+                    <li>At least 8 characters long</li>
+                    <li>At least one uppercase letter</li>
+                    <li>At least one lowercase letter</li>
+                    <li>At least one number</li>
+                    <li>At least one special character (!@#$%^&*(),.?":{}|<>)</li>
+                </ul>
+            </div>
 
-    <form id="changePasswordForm">
-        <div class="form-group">
-            <label for="currentPassword">Current Password</label>
-            <input type="password" id="currentPassword" required>
+            <form id="changePasswordForm" onsubmit="changePassword(event)">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <div id="passwordErrors" class="error-message"></div>
+                <button type="submit">Change Password</button>
+                <p id="passwordMessage"></p>
+            </form>
         </div>
-        <div class="form-group">
-            <label for="newPassword">New Password</label>
-            <input type="password" id="newPassword" required>
-        </div>
-        <div class="form-group">
-            <label for="confirmPassword">Confirm New Password</label>
-            <input type="password" id="confirmPassword" required>
-        </div>
-        <div id="passwordErrors" class="error-message"></div>
-        <button type="submit">Change Password</button>
-        <p id="passwordMessage"></p>
-    </form>
+    </div>
 </div>
-        </div>
-    </div>
 
-    <!-- 2FA Setup Modal -->
-    <div id="setup2FAModal" class="modal">
-        <div class="modal-content">
-            <h4>Set Up Two-Factor Authentication</h4>
-            <p>1. Scan this QR code with your authenticator app:</p>
-            <img id="qrCode" src="" alt="QR Code">
-            <p>2. Enter the 6-digit code from your app:</p>
-            <input type="text" id="verificationCode" maxlength="6">
-            <button onclick="verify2FA()">Verify</button>
-            <button onclick="closeSetup2FA()">Cancel</button>
-        </div>
+<!-- 2FA Setup Modal -->
+<div id="setup2FAModal" class="modal">
+    <div class="modal-content">
+        <h4>Set Up Two-Factor Authentication</h4>
+        <p>1. Scan this QR code with your authenticator app:</p>
+        <img id="qrCode" src="" alt="QR Code">
+        <p>2. Enter the 6-digit code from your app:</p>
+        <input type="text" id="verificationCode" maxlength="6">
+        <button onclick="verify2FA()">Verify</button>
+        <button onclick="closeSetup2FA()">Cancel</button>
     </div>
+</div>
 
         <script>
         // Session Management Functions
@@ -393,18 +393,20 @@ async function changePassword(event) {
     const newPassword = document.getElementById('newPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
+    console.log('Starting password change...'); // Debug log
+
     // Reset error displays
-    errorDiv.style.display = 'none';
+    errorDiv.style.display = 'block'; // Changed to 'block' to always show
     messageElement.textContent = '';
 
     // Check if passwords match
     if (newPassword !== confirmPassword) {
-        messageElement.textContent = 'New passwords do not match';
-        messageElement.className = 'error';
+        errorDiv.innerHTML = 'New passwords do not match';
         return;
     }
 
     try {
+        console.log('Sending request to server...'); // Debug log
         const response = await fetch('/change-password', {
             method: 'POST',
             headers: {
@@ -417,27 +419,24 @@ async function changePassword(event) {
         });
 
         const data = await response.json();
+        console.log('Server response:', data); // Debug log
         
         if (data.success) {
-            messageElement.textContent = 'Password changed successfully';
-            messageElement.className = 'success';
+            errorDiv.style.color = 'green';
+            errorDiv.innerHTML = 'Password changed successfully';
             document.getElementById('changePasswordForm').reset();
-            errorDiv.style.display = 'none';
         } else {
+            errorDiv.style.color = 'red';
             if (data.errors) {
-                // Display specific password requirement errors
-                errorDiv.style.display = 'block';
+                console.log('Password validation errors:', data.errors); // Debug log
                 errorDiv.innerHTML = data.errors.join('<br>');
-                errorDiv.className = 'error-message';
             } else {
-                messageElement.textContent = data.message || 'Failed to change password';
-                messageElement.className = 'error';
+                errorDiv.innerHTML = data.message || 'Failed to change password';
             }
         }
     } catch (error) {
         console.error('Error:', error);
-        messageElement.textContent = 'Server error';
-        messageElement.className = 'error';
+        errorDiv.innerHTML = 'An error occurred while changing password';
     }
 }
 
