@@ -233,8 +233,18 @@
         }
 
         .error-message {
-            display: none;
-        }
+    color: red;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.error {
+    color: red;
+}
+
+.success {
+    color: green;
+}
     </style>
 </head>
 <body>
@@ -309,9 +319,9 @@
             <label for="confirmPassword">Confirm New Password</label>
             <input type="password" id="confirmPassword" required>
         </div>
-        <!-- Add this error message div -->
-        <div id="passwordErrors" class="error-message" style="color: red; margin-top: 5px;"></div>
+        <div id="passwordErrors" class="error-message"></div>
         <button type="submit">Change Password</button>
+        <p id="passwordMessage"></p>
     </form>
 </div>
         </div>
@@ -377,15 +387,20 @@
 async function changePassword(event) {
     event.preventDefault();
     const errorDiv = document.getElementById('passwordErrors');
+    const messageElement = document.getElementById('passwordMessage');
     
     const currentPassword = document.getElementById('currentPassword').value;
     const newPassword = document.getElementById('newPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
+    // Reset error displays
+    errorDiv.style.display = 'none';
+    messageElement.textContent = '';
+
     // Check if passwords match
     if (newPassword !== confirmPassword) {
-        errorDiv.style.display = 'block';
-        errorDiv.innerHTML = 'New passwords do not match';
+        messageElement.textContent = 'New passwords do not match';
+        messageElement.className = 'error';
         return;
     }
 
@@ -404,29 +419,25 @@ async function changePassword(event) {
         const data = await response.json();
         
         if (data.success) {
-            // Success message
-            errorDiv.style.display = 'block';
-            errorDiv.style.color = 'green';
-            errorDiv.innerHTML = 'Password changed successfully';
+            messageElement.textContent = 'Password changed successfully';
+            messageElement.className = 'success';
             document.getElementById('changePasswordForm').reset();
-            // Reset error div style after 3 seconds
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-                errorDiv.style.color = 'red';
-            }, 3000);
+            errorDiv.style.display = 'none';
         } else {
-            errorDiv.style.display = 'block';
             if (data.errors) {
                 // Display specific password requirement errors
+                errorDiv.style.display = 'block';
                 errorDiv.innerHTML = data.errors.join('<br>');
+                errorDiv.className = 'error-message';
             } else {
-                errorDiv.innerHTML = data.message;
+                messageElement.textContent = data.message || 'Failed to change password';
+                messageElement.className = 'error';
             }
         }
     } catch (error) {
         console.error('Error:', error);
-        errorDiv.style.display = 'block';
-        errorDiv.innerHTML = 'An error occurred while changing password';
+        messageElement.textContent = 'Server error';
+        messageElement.className = 'error';
     }
 }
 
