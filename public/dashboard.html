@@ -562,10 +562,23 @@ async function changePassword(event) {
         }
 		// Password Strength Checker
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('newPassword').addEventListener('input', function(e) {
+    console.log('DOM Content Loaded'); // Debug log
+    
+    const newPasswordInput = document.getElementById('newPassword');
+    console.log('Password Input Element:', newPasswordInput); // Debug log
+    
+    newPasswordInput.addEventListener('input', function(e) {
+        console.log('Input event triggered'); // Debug log
         const password = e.target.value;
+        console.log('Current password value:', password); // Debug log
+        
         const strengthMeter = document.querySelector('.strength-meter');
         const strengthText = document.querySelector('.strength-text span');
+        
+        console.log('Strength elements:', { 
+            meter: strengthMeter, 
+            text: strengthText 
+        }); // Debug log
         
         // Reset if empty
         if (password.length === 0) {
@@ -584,6 +597,8 @@ document.addEventListener('DOMContentLoaded', function() {
             hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
             hasExtraLength: password.length >= 12
         };
+        
+        console.log('Password checks:', checks); // Debug log
 
         // Add points for each criteria met
         strength += checks.length ? 1 : 0;
@@ -592,6 +607,8 @@ document.addEventListener('DOMContentLoaded', function() {
         strength += checks.hasNumbers ? 1 : 0;
         strength += checks.hasSpecialChar ? 1 : 0;
         strength += checks.hasExtraLength ? 1 : 0;
+
+        console.log('Password strength score:', strength); // Debug log
 
         // Update UI based on strength
         strengthMeter.className = 'strength-meter';
@@ -608,7 +625,10 @@ document.addEventListener('DOMContentLoaded', function() {
             strengthMeter.classList.add('weak');
             strengthText.textContent = 'Weak';
         }
+        
+        console.log('Updated strength class:', strengthMeter.className); // Debug log
     });
+});
 
         // User Data Functions
         async function loadUserData() {
