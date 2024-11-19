@@ -33,6 +33,37 @@ function generateStrongPassword(length = 12) {
 
 const app = express();
 
+function validatePassword(password) {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    const errors = [];
+    
+    if (password.length < minLength) {
+        errors.push(`Password must be at least ${minLength} characters long`);
+    }
+    if (!hasUpperCase) {
+        errors.push('Password must contain at least one uppercase letter');
+    }
+    if (!hasLowerCase) {
+        errors.push('Password must contain at least one lowercase letter');
+    }
+    if (!hasNumbers) {
+        errors.push('Password must contain at least one number');
+    }
+    if (!hasSpecialChar) {
+        errors.push('Password must contain at least one special character');
+    }
+
+    return {
+        isValid: errors.length === 0,
+        errors: errors
+    };
+}
+
 // 1. Static files middleware
 app.use(express.static('public'));
 
@@ -438,6 +469,16 @@ app.post('/reset-password', async (req, res) => {
     const { token, newPassword } = req.body;
 
     try {
+        // Validate new password
+        const validation = validatePassword(newPassword);
+        if (!validation.isValid) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Password requirements not met',
+                errors: validation.errors
+            });
+        }
+
         const result = await pool.query(
             'SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()',
             [token]
@@ -469,6 +510,15 @@ app.post('/change-password', requireLogin, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
         
+        const validation = validatePassword(newPassword);
+        if (!validation.isValid) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Password requirements not met',
+                errors: validation.errors
+            });
+        }
+
         const result = await pool.query(
             'SELECT password FROM users WHERE id = $1',
             [req.session.userId]
