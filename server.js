@@ -186,7 +186,11 @@ const requireLogin = (req, res, next) => {
         next();
     } else {
         console.log('No userId in session - redirecting to login');
-        res.status(401).json({ success: false, message: 'Please log in' });
+        if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+            res.status(401).json({ success: false, message: 'Please log in' });
+        } else {
+            res.redirect('/');
+        }
     }
 };
 
