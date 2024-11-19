@@ -193,7 +193,7 @@ const requireLogin = (req, res, next) => {
 // 8. Authentication Routes
 app.post('/login', async (req, res) => {
     try {
-        const { email, password, token } = req.body;
+        const { email, password, token, rememberMe } = req.body;  // Add rememberMe here
         console.log('Login attempt for:', email);
 
         const result = await pool.query(
@@ -211,14 +211,12 @@ app.post('/login', async (req, res) => {
                 // Check if 2FA is enabled
                 if (user.two_factor_enabled) {
                     if (!token) {
-                        // If 2FA is enabled but no token provided, return need2FA flag
                         return res.json({ 
                             success: false, 
                             need2FA: true 
                         });
                     }
 
-                    // Verify 2FA token
                     const verified = speakeasy.totp.verify({
                         secret: user.two_factor_secret,
                         encoding: 'base32',
@@ -235,9 +233,14 @@ app.post('/login', async (req, res) => {
 
                 // Set session
                 req.session.userId = user.id;
-                console.log('Session set:', req.session);
                 
-                // Wait for session to be saved
+                // Add this block for Remember Me
+                if (rememberMe) {
+                    req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+                } else {
+                    req.session.cookie.expires = false; // Session cookie
+                }
+
                 await new Promise((resolve, reject) => {
                     req.session.save((err) => {
                         if (err) {
@@ -249,7 +252,6 @@ app.post('/login', async (req, res) => {
                     });
                 });
 
-                console.log('Session saved successfully');
                 res.json({ 
                     success: true,
                     redirectUrl: '/dashboard'
