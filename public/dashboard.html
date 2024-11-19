@@ -245,6 +245,43 @@
 .success {
     color: green;
 }
+/* Password Strength Indicator */
+.password-strength {
+    margin-top: 10px;
+}
+
+.strength-meter {
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    transition: all 0.3s ease-in-out;
+}
+
+.strength-meter.weak {
+    width: 25%;
+    background: #ff4444;
+}
+
+.strength-meter.medium {
+    width: 50%;
+    background: #ffbb33;
+}
+
+.strength-meter.strong {
+    width: 75%;
+    background: #00C851;
+}
+
+.strength-meter.very-strong {
+    width: 100%;
+    background: #007E33;
+}
+
+.strength-text {
+    font-size: 0.8em;
+    margin-top: 5px;
+    color: #666;
+}
     </style>
 </head>
 <body>
@@ -291,40 +328,43 @@
                 </div>
             </div>
 
-            <!-- Change Password Card -->
-        <div class="card">
-            <h2>Change Password</h2>
-            
-            <div class="password-requirements">
-                <h4>Password Requirements:</h4>
-                <ul>
-                    <li>At least 8 characters long</li>
-                    <li>At least one uppercase letter</li>
-                    <li>At least one lowercase letter</li>
-                    <li>At least one number</li>
-                    <li>At least one special character (!@#$%^&*(),.?":{}|<>)</li>
-                </ul>
-            </div>
-
-            <form id="changePasswordForm" onsubmit="changePassword(event)">
-                <div class="form-group">
-                    <label for="currentPassword">Current Password</label>
-                    <input type="password" id="currentPassword" required>
-                </div>
-                <div class="form-group">
-                    <label for="newPassword">New Password</label>
-                    <input type="password" id="newPassword" required>
-                </div>
-                <div class="form-group">
-                    <label for="confirmPassword">Confirm New Password</label>
-                    <input type="password" id="confirmPassword" required>
-                </div>
-                <div id="passwordErrors" class="error-message"></div>
-                <button type="submit">Change Password</button>
-                <p id="passwordMessage"></p>
-            </form>
-        </div>
+         <!-- Change Password Card -->
+<div class="card">
+    <h2>Change Password</h2>
+    
+    <div class="password-requirements">
+        <h4>Password Requirements:</h4>
+        <ul>
+            <li>At least 8 characters long</li>
+            <li>At least one uppercase letter</li>
+            <li>At least one lowercase letter</li>
+            <li>At least one number</li>
+            <li>At least one special character (!@#$%^&*(),.?":{}|<>)</li>
+        </ul>
     </div>
+
+    <form id="changePasswordForm" onsubmit="changePassword(event)">
+        <div class="form-group">
+            <label for="currentPassword">Current Password</label>
+            <input type="password" id="currentPassword" required>
+        </div>
+        <div class="form-group">
+            <label for="newPassword">New Password</label>
+            <input type="password" id="newPassword" required>
+            <!-- Add password strength indicator -->
+            <div class="password-strength">
+                <div class="strength-meter"></div>
+                <p class="strength-text">Password strength: <span>None</span></p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="confirmPassword">Confirm New Password</label>
+            <input type="password" id="confirmPassword" required>
+        </div>
+        <div id="passwordErrors" class="error-message"></div>
+        <button type="submit">Change Password</button>
+        <p id="passwordMessage"></p>
+    </form>
 </div>
 
 <!-- 2FA Setup Modal -->
@@ -440,6 +480,7 @@ async function changePassword(event) {
     }
 }
 
+
         // 2FA Functions
         async function check2FAStatus() {
             console.log('Checking 2FA status...');
@@ -519,6 +560,55 @@ async function changePassword(event) {
         function closeSetup2FA() {
             document.getElementById('setup2FAModal').style.display = 'none';
         }
+		// Password Strength Checker
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('newPassword').addEventListener('input', function(e) {
+        const password = e.target.value;
+        const strengthMeter = document.querySelector('.strength-meter');
+        const strengthText = document.querySelector('.strength-text span');
+        
+        // Reset if empty
+        if (password.length === 0) {
+            strengthMeter.className = 'strength-meter';
+            strengthText.textContent = 'None';
+            return;
+        }
+
+        // Calculate strength
+        let strength = 0;
+        const checks = {
+            length: password.length >= 8,
+            hasUpperCase: /[A-Z]/.test(password),
+            hasLowerCase: /[a-z]/.test(password),
+            hasNumbers: /\d/.test(password),
+            hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+            hasExtraLength: password.length >= 12
+        };
+
+        // Add points for each criteria met
+        strength += checks.length ? 1 : 0;
+        strength += checks.hasUpperCase ? 1 : 0;
+        strength += checks.hasLowerCase ? 1 : 0;
+        strength += checks.hasNumbers ? 1 : 0;
+        strength += checks.hasSpecialChar ? 1 : 0;
+        strength += checks.hasExtraLength ? 1 : 0;
+
+        // Update UI based on strength
+        strengthMeter.className = 'strength-meter';
+        if (strength >= 6) {
+            strengthMeter.classList.add('very-strong');
+            strengthText.textContent = 'Very Strong';
+        } else if (strength >= 4) {
+            strengthMeter.classList.add('strong');
+            strengthText.textContent = 'Strong';
+        } else if (strength >= 3) {
+            strengthMeter.classList.add('medium');
+            strengthText.textContent = 'Medium';
+        } else {
+            strengthMeter.classList.add('weak');
+            strengthText.textContent = 'Weak';
+        }
+    });
 
         // User Data Functions
         async function loadUserData() {
