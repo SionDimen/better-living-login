@@ -207,6 +207,34 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+		 /* Password requirement styles */
+        .password-requirements {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        .password-requirements h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .password-requirements ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .password-requirements li {
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .error-message {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -254,25 +282,38 @@
             </div>
 
             <!-- Change Password Card -->
-            <div class="card">
-                <h2>Change Password</h2>
-                <form id="changePasswordForm" onsubmit="changePassword(event)">
-                    <div class="form-group">
-                        <label for="currentPassword">Current Password</label>
-                        <input type="password" id="currentPassword" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="newPassword">New Password</label>
-                        <input type="password" id="newPassword" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm New Password</label>
-                        <input type="password" id="confirmPassword" required>
-                    </div>
-                    <button type="submit">Change Password</button>
-                    <p id="passwordMessage"></p>
-                </form>
-            </div>
+<div class="card">
+    <h2>Change Password</h2>
+    
+    <div class="password-requirements">
+        <h4>Password Requirements:</h4>
+        <ul>
+            <li>At least 8 characters long</li>
+            <li>At least one uppercase letter</li>
+            <li>At least one lowercase letter</li>
+            <li>At least one number</li>
+            <li>At least one special character (!@#$%^&*(),.?":{}|<>)</li>
+        </ul>
+    </div>
+
+    <form id="changePasswordForm">
+        <div class="form-group">
+            <label for="currentPassword">Current Password</label>
+            <input type="password" id="currentPassword" required>
+        </div>
+        <div class="form-group">
+            <label for="newPassword">New Password</label>
+            <input type="password" id="newPassword" required>
+        </div>
+        <div class="form-group">
+            <label for="confirmPassword">Confirm New Password</label>
+            <input type="password" id="confirmPassword" required>
+        </div>
+        <!-- Add this error message div -->
+        <div id="passwordErrors" class="error-message" style="color: red; margin-top: 5px;"></div>
+        <button type="submit">Change Password</button>
+    </form>
+</div>
         </div>
     </div>
 
@@ -333,48 +374,61 @@
         }
 
         // Password Management
-        async function changePassword(event) {
-            event.preventDefault();
-            const messageElement = document.getElementById('passwordMessage');
-            
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
+async function changePassword(event) {
+    event.preventDefault();
+    const errorDiv = document.getElementById('passwordErrors');
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
 
-            if (newPassword !== confirmPassword) {
-                messageElement.textContent = 'New passwords do not match';
-                messageElement.className = 'error';
-                return;
-            }
+    // Check if passwords match
+    if (newPassword !== confirmPassword) {
+        errorDiv.style.display = 'block';
+        errorDiv.innerHTML = 'New passwords do not match';
+        return;
+    }
 
-            try {
-                const response = await fetch('/change-password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        currentPassword,
-                        newPassword
-                    })
-                });
+    try {
+        const response = await fetch('/change-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                currentPassword,
+                newPassword
+            })
+        });
 
-                const data = await response.json();
-                
-                if (data.success) {
-                    messageElement.textContent = 'Password changed successfully';
-                    messageElement.className = 'success';
-                    document.getElementById('changePasswordForm').reset();
-                } else {
-                    messageElement.textContent = data.message || 'Failed to change password';
-                    messageElement.className = 'error';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                messageElement.textContent = 'Server error';
-                messageElement.className = 'error';
+        const data = await response.json();
+        
+        if (data.success) {
+            // Success message
+            errorDiv.style.display = 'block';
+            errorDiv.style.color = 'green';
+            errorDiv.innerHTML = 'Password changed successfully';
+            document.getElementById('changePasswordForm').reset();
+            // Reset error div style after 3 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+                errorDiv.style.color = 'red';
+            }, 3000);
+        } else {
+            errorDiv.style.display = 'block';
+            if (data.errors) {
+                // Display specific password requirement errors
+                errorDiv.innerHTML = data.errors.join('<br>');
+            } else {
+                errorDiv.innerHTML = data.message;
             }
         }
+    } catch (error) {
+        console.error('Error:', error);
+        errorDiv.style.display = 'block';
+        errorDiv.innerHTML = 'An error occurred while changing password';
+    }
+}
 
         // 2FA Functions
         async function check2FAStatus() {
