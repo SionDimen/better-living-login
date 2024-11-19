@@ -6,17 +6,23 @@
     <title>Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <style>
-    /* Base styles */
-    body, html {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    background-color: #1a1a1a; /* Fallback color */
-    background-image: url('/images/dashboard-bg.jpg');
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+	    /* Video Background */
+.video-background {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    z-index: -1;
+}
+
+#myVideo {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    object-fit: cover;
 }
         /* Container */
         .dashboard-container {
@@ -32,7 +38,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6); 
+    background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity as needed */
     z-index: 0;
 }
 
@@ -309,6 +315,13 @@
     </style>
 </head>
 <body>
+    <!-- Video Background -->
+    <div class="video-background">
+        <video autoplay muted loop id="myVideo">
+            <source src="/videos/your-video.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
     <div class="dashboard-overlay"></div>
     <div class="dashboard-container">
         <div class="header">
