@@ -43,6 +43,12 @@
             <input type="password" id="password" required>
             <a href="#" class="forgot-password" onclick="showForgotPassword(event)">Forgot your password?</a>
         </div>
+		
+		<div class="form-group remember-me">
+    <input type="checkbox" id="rememberMe">
+    <label for="rememberMe">Remember me</label>
+</div>
+
 
         <div id="twoFactorInput" style="display: none;">
     <div class="form-group">
@@ -108,8 +114,7 @@
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const token = document.getElementById('2faCode')?.value;
-        
-        console.log('Form values:', { email, password, hasToken: !!token });
+        const rememberMe = document.getElementById('rememberMe').checked; // Add this line
         
         try {
             console.log('Sending login request...');
@@ -118,7 +123,12 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, password, token }),
+                body: JSON.stringify({ 
+                    email, 
+                    password, 
+                    token,
+                    rememberMe 
+                }),
                 credentials: 'same-origin'
             });
             

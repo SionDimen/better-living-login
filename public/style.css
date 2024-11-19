@@ -177,6 +177,24 @@ button[type="submit"] {
 .bottom-text a:hover {
     text-decoration: underline;
 }
+/* Remember Me Styles */
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.remember-me input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.remember-me label {
+    margin: 0;
+    cursor: pointer;
+    color: #fff; 
+}
 
 /* Forgot Password Modal */
 .modal {
