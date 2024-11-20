@@ -293,3 +293,13 @@ footer {
     margin-bottom: 20px;
     line-height: 1.5;
 }
+
+/* Add these new rules */
+.dashboard-page {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+}
+
+.dashboard-page .video-background,
+.dashboard-page .dashboard-overlay {
+    display: none !important;
+}
