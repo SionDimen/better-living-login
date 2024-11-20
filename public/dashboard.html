@@ -582,71 +582,65 @@ async function changePassword(event) {
         }
 		// Password Strength Checker
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM Content Loaded'); // Debug log
-    
     const newPasswordInput = document.getElementById('newPassword');
-    console.log('Password Input Element:', newPasswordInput); // Debug log
+    const strengthMeter = document.querySelector('.strength-meter');
+    const strengthText = document.querySelector('.strength-text span');
     
+    // Verify elements exist
+    if (!newPasswordInput || !strengthMeter || !strengthText) {
+        console.error('Required password strength elements not found:', {
+            newPasswordInput: !!newPasswordInput,
+            strengthMeter: !!strengthMeter,
+            strengthText: !!strengthText
+        });
+        return;
+    }
+
     newPasswordInput.addEventListener('input', function(e) {
-        console.log('Input event triggered'); // Debug log
-        const password = e.target.value;
-        console.log('Current password value:', password); // Debug log
-        
-        const strengthMeter = document.querySelector('.strength-meter');
-        const strengthText = document.querySelector('.strength-text span');
-        
-        console.log('Strength elements:', { 
-            meter: strengthMeter, 
-            text: strengthText 
-        }); // Debug log
-        
-        // Reset if empty
-        if (password.length === 0) {
+        try {
+            const password = e.target.value;
+            
+            // Reset if empty
+            if (password.length === 0) {
+                strengthMeter.className = 'strength-meter';
+                strengthText.textContent = 'None';
+                return;
+            }
+
+            // Calculate strength
+            let strength = 0;
+            const checks = {
+                length: password.length >= 8,
+                hasUpperCase: /[A-Z]/.test(password),
+                hasLowerCase: /[a-z]/.test(password),
+                hasNumbers: /\d/.test(password),
+                hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+                hasExtraLength: password.length >= 12
+            };
+
+            // Add points for each criteria met
+            Object.values(checks).forEach(check => {
+                if (check) strength++;
+            });
+
+            // Update UI based on strength
             strengthMeter.className = 'strength-meter';
-            strengthText.textContent = 'None';
-            return;
+            if (strength >= 6) {
+                strengthMeter.classList.add('very-strong');
+                strengthText.textContent = 'Very Strong';
+            } else if (strength >= 4) {
+                strengthMeter.classList.add('strong');
+                strengthText.textContent = 'Strong';
+            } else if (strength >= 3) {
+                strengthMeter.classList.add('medium');
+                strengthText.textContent = 'Medium';
+            } else {
+                strengthMeter.classList.add('weak');
+                strengthText.textContent = 'Weak';
+            }
+        } catch (error) {
+            console.error('Error in password strength checker:', error);
         }
-
-        // Calculate strength
-        let strength = 0;
-        const checks = {
-            length: password.length >= 8,
-            hasUpperCase: /[A-Z]/.test(password),
-            hasLowerCase: /[a-z]/.test(password),
-            hasNumbers: /\d/.test(password),
-            hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-            hasExtraLength: password.length >= 12
-        };
-        
-        console.log('Password checks:', checks); // Debug log
-
-        // Add points for each criteria met
-        strength += checks.length ? 1 : 0;
-        strength += checks.hasUpperCase ? 1 : 0;
-        strength += checks.hasLowerCase ? 1 : 0;
-        strength += checks.hasNumbers ? 1 : 0;
-        strength += checks.hasSpecialChar ? 1 : 0;
-        strength += checks.hasExtraLength ? 1 : 0;
-
-        console.log('Password strength score:', strength); // Debug log
-
-        // Update UI based on strength
-        strengthMeter.className = 'strength-meter';
-        if (strength >= 6) {
-            strengthMeter.classList.add('very-strong');
-            strengthText.textContent = 'Very Strong';
-        } else if (strength >= 4) {
-            strengthMeter.classList.add('strong');
-            strengthText.textContent = 'Strong';
-        } else if (strength >= 3) {
-            strengthMeter.classList.add('medium');
-            strengthText.textContent = 'Medium';
-        } else {
-            strengthMeter.classList.add('weak');
-            strengthText.textContent = 'Weak';
-        }
-        
-        console.log('Updated strength class:', strengthMeter.className); // Debug log
     });
 });
 
