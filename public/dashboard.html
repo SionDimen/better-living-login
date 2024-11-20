@@ -6,7 +6,37 @@
     <title>Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <style>
-	    /* Video Background */
+        /* Add these styles at the top of your existing style section */
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Hide ALL video backgrounds */
+        .video-background,
+        .dashboard-overlay,
+        video,
+        [class*="video"],
+        .gradient-overlay {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            width: 0 !important;
+            height: 0 !important;
+            position: absolute !important;
+            z-index: -9999 !important;
+            pointer-events: none !important;
+        }
+
+        /* Ensure dashboard container is above everything */
+        .dashboard-container {
+            position: relative;
+            z-index: 2;
+            background: transparent;
+        }
+
+        /* Video Background */
 .video-background {
     position: fixed;
     right: 0;
