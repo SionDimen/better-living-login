@@ -6,16 +6,27 @@
     <title>Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Add this at the top of your style section */
-        video, 
-        .video-container,
-        #myVideo {
+        /* Add these rules at the top of your style section */
+        .video-background,
+        .dashboard-overlay {
             display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            position: static !important;
         }
 
+        /* Make sure the body background is solid */
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
             min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-container {
+            position: relative;
+            z-index: 2;
+            background: transparent;
         }
 
         /* Container */
