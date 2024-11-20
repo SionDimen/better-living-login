@@ -6,7 +6,19 @@
     <title>Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <style>
-	    /* Container */
+        /* Add this at the top of your style section */
+        video, 
+        .video-container,
+        #myVideo {
+            display: none !important;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+            min-height: 100vh;
+        }
+
+        /* Container */
         .dashboard-container {
     padding: 20px;
     max-width: 1200px;
@@ -286,11 +298,6 @@
     font-size: 0.8em;
     margin-top: 5px;
     color: #666;
-}
-
-body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    min-height: 100vh;
 }
     </style>
 </head>
