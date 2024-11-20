@@ -120,10 +120,14 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
                 const hashedPassword = await bcrypt.hash(password, 10);
                 console.log('Password hashed successfully');
 
+                
                 console.log('Saving to database...');
+                const newExpiryDate = new Date();
+                newExpiryDate.setMonth(newExpiryDate.getMonth() + 1); 
+
                 await pool.query(
-                    'INSERT INTO users (email, password) VALUES ($1, $2)',
-                    [customerEmail, hashedPassword]
+                    'INSERT INTO users (email, password, membership_expires_at, membership_status, created_at) VALUES ($1, $2, $3, $4, NOW())',
+                    [customerEmail, hashedPassword, newExpiryDate, 'active']
                 );
                 console.log('User saved to database successfully');
 
@@ -146,6 +150,7 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
                         <p>Thank you for your purchase! Here are your login credentials:</p>
                         <p><strong>Email:</strong> ${customerEmail}</p>
                         <p><strong>Password:</strong> ${password}</p>
+                        <p><strong>Membership Expires:</strong> ${newExpiryDate.toLocaleDateString()}</p>
                         <p>Please login at: ${process.env.SITE_URL}</p>
                         <p>We recommend changing your password after your first login.</p>
                         <br>
@@ -224,6 +229,56 @@ const requireLogin = (req, res, next) => {
         }
     }
 };
+// Middleware to check membership status
+async function checkMembershipStatus(req, res, next) {
+    try {
+        // Skip check for public routes and login
+        const publicPaths = ['/', '/login', '/reset-password', '/process-payment', '/check-session', '/refresh-session', '/logout'];
+        if (publicPaths.includes(req.path) || req.path.startsWith('/public')) {
+            return next();
+        }
+
+        if (!req.session.userId) {
+            return res.redirect('/login');
+        }
+
+        const result = await pool.query(
+            'SELECT membership_expires_at, membership_status FROM users WHERE id = $1',
+            [req.session.userId]
+        );
+
+        if (!result.rows[0]) {
+            return res.redirect('/login');
+        }
+
+        const user = result.rows[0];
+        const now = new Date();
+
+        if (user.membership_expires_at && (user.membership_expires_at < now || user.membership_status !== 'active')) {
+            // Update status to expired if needed
+            await pool.query(
+                'UPDATE users SET membership_status = $1 WHERE id = $2',
+                ['expired', req.session.userId]
+            );
+
+            // Clear session
+            req.session.destroy((err) => {
+                if (err) {
+                    console.error('Error destroying session:', err);
+                }
+            });
+            return res.redirect('/login?expired=true');
+        }
+
+        next();
+    } catch (error) {
+        console.error('Error checking membership:', error);
+        res.status(500).send('Server error');
+    }
+}
+
+// Add the middleware to your app
+app.use(checkMembershipStatus);
 
 // 8. Authentication Routes
 app.post('/login', async (req, res) => {
