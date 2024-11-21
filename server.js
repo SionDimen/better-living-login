@@ -602,15 +602,6 @@ app.get('/dashboard', requireLogin, (req, res) => {
     res.sendFile(__dirname + '/public/dashboard.html');
 });
 
-// Middleware to check if user is authenticated
-const requireAuth = (req, res, next) => {
-    if (!req.session.userId) {
-        // If not authenticated, redirect to login
-        return res.redirect('/');
-    }
-    next();
-};
-
 // Apply authentication check to all routes under /courses
 app.use('/courses/*', requireAuth);
 
