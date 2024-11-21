@@ -605,12 +605,29 @@ app.get('/dashboard', requireLogin, (req, res) => {
 // Apply authentication check to all routes under /courses
 app.use('/courses/*', requireAuth);
 
+app.get('/courses/:courseName', requireAuth, (req, res) => {
+    try {
+        const courseName = req.params.courseName;
+        const coursePath = __dirname + `/public/courses/${courseName}.html`;
+        
+        // Check if file exists
+        if (!require('fs').existsSync(coursePath)) {
+            console.error('Course file not found:', coursePath);
+            return res.status(404).json({ success: false, message: 'Course not found' });
+        }
+        
+        res.sendFile(coursePath);
+    } catch (error) {
+        console.error('Error serving course page:', error);
+        res.status(500).json({ success: false, message: 'Error loading course page' });
+    }
+});
+
 app.get('/courses', requireLogin, (req, res) => {
     try {
-
         console.log('Attempting to serve courses page');
-        
         const coursesPath = __dirname + '/public/courses.html';
+        
         if (!require('fs').existsSync(coursesPath)) {
             console.error('Courses file not found at:', coursesPath);
             return res.status(404).json({ success: false, message: 'Courses page not found' });
