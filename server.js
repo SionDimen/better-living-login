@@ -31,7 +31,21 @@ function generateStrongPassword(length = 12) {
     return password.split('').sort(() => Math.random() - 0.5).join('');
 }
 
+// Authentication middleware
+const requireAuth = (req, res, next) => {
+    if (!req.session.userId) {
+        return res.redirect('/');
+    }
+    next();
+};
+
 const app = express();
+
+// Apply course protection before static middleware
+app.use('/courses/*', requireAuth);
+
+// Then the static middleware
+app.use(express.static('public'));
 
 function validatePassword(password) {
     const minLength = 8;
@@ -63,20 +77,6 @@ function validatePassword(password) {
         errors: errors
     };
 }
-
-//1. Authentication middleware
-const requireAuth = (req, res, next) => {
-    if (!req.session.userId) {
-        return res.redirect('/');
-    }
-    next();
-};
-
-// Protect course routes BEFORE static middleware
-app.use('/courses/*', requireAuth);
-
-// Then have the static middleware
-app.use(express.static('public'));
 
 // 2. Session middleware with cookie settings
 app.use(session({
