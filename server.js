@@ -31,21 +31,13 @@ function generateStrongPassword(length = 12) {
     return password.split('').sort(() => Math.random() - 0.5).join('');
 }
 
-// Authentication middleware
-const requireAuth = (req, res, next) => {
-    if (!req.session || !req.session.userId) {
-        return res.redirect('/');
-    }
-    next();
-};
-
 const app = express();
 
-// 1. First, add essential middleware
+// Essential middleware
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// 2. Session middleware must come BEFORE auth middleware
+// Session middleware
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: true,
@@ -59,7 +51,7 @@ app.use(session({
     rolling: true
 }));
 
-// 3. Then define and use auth middleware
+// Single auth middleware declaration
 const requireAuth = (req, res, next) => {
     if (!req.session || !req.session.userId) {
         return res.redirect('/');
@@ -67,10 +59,10 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
-// 4. Apply course protection
+// Apply course protection
 app.use('/courses/*', requireAuth);
 
-// 5. Static file serving
+// Static files
 app.use(express.static('public'));
 
 function validatePassword(password) {
