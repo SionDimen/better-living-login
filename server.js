@@ -64,7 +64,18 @@ function validatePassword(password) {
     };
 }
 
-// 1. Static files middleware
+//1. Authentication middleware
+const requireAuth = (req, res, next) => {
+    if (!req.session.userId) {
+        return res.redirect('/');
+    }
+    next();
+};
+
+// Protect course routes BEFORE static middleware
+app.use('/courses/*', requireAuth);
+
+// Then have the static middleware
 app.use(express.static('public'));
 
 // 2. Session middleware with cookie settings
