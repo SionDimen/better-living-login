@@ -33,7 +33,7 @@ function generateStrongPassword(length = 12) {
 
 // Authentication middleware
 const requireAuth = (req, res, next) => {
-    if (!req.session.userId) {
+    if (!req.session || !req.session.userId) {
         return res.redirect('/');
     }
     next();
@@ -41,10 +41,36 @@ const requireAuth = (req, res, next) => {
 
 const app = express();
 
-// Apply course protection before static middleware
+// 1. First, add essential middleware
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// 2. Session middleware must come BEFORE auth middleware
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true,
+    cookie: { 
+        secure: false,
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: 'lax'
+    },
+    rolling: true
+}));
+
+// 3. Then define and use auth middleware
+const requireAuth = (req, res, next) => {
+    if (!req.session || !req.session.userId) {
+        return res.redirect('/');
+    }
+    next();
+};
+
+// 4. Apply course protection
 app.use('/courses/*', requireAuth);
 
-// Then the static middleware
+// 5. Static file serving
 app.use(express.static('public'));
 
 function validatePassword(password) {
@@ -77,20 +103,6 @@ function validatePassword(password) {
         errors: errors
     };
 }
-
-// 2. Session middleware with cookie settings
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true,
-    cookie: { 
-        secure: false,  // Changed from true to false
-        maxAge: 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        sameSite: 'lax'
-    },
-    rolling: true
-}));
 
 // 3. Database connection
 const pool = new Pool({
@@ -184,10 +196,6 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
         res.status(400).send(`Webhook Error: ${err.message}`);
     }
 });
-
-// 5. Body parsers for other routes
-app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // 6. Initialize database
 async function initDatabase() {
