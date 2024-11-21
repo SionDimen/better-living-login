@@ -610,16 +610,47 @@ app.get('/courses/:courseName', requireAuth, (req, res) => {
         const courseName = req.params.courseName;
         const coursePath = __dirname + `/public/courses/${courseName}.html`;
         
-        // Check if file exists
-        if (!require('fs').existsSync(coursePath)) {
+        console.log('Attempting to serve course:', courseName);
+        console.log('Full course path:', coursePath);
+        
+        // Check if file exists with more detailed logging
+        const fs = require('fs');
+        if (!fs.existsSync(coursePath)) {
             console.error('Course file not found:', coursePath);
-            return res.status(404).json({ success: false, message: 'Course not found' });
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Course not found',
+                path: coursePath 
+            });
         }
         
-        res.sendFile(coursePath);
+        // Log successful file find
+        console.log('Course file found, attempting to send...');
+        
+        res.sendFile(coursePath, (err) => {
+            if (err) {
+                console.error('Error sending file:', err);
+                res.status(500).json({ 
+                    success: false, 
+                    message: 'Error sending course file',
+                    error: err.message 
+                });
+            } else {
+                console.log('File sent successfully');
+            }
+        });
+        
     } catch (error) {
-        console.error('Error serving course page:', error);
-        res.status(500).json({ success: false, message: 'Error loading course page' });
+        console.error('Detailed error in course route:', {
+            message: error.message,
+            stack: error.stack,
+            code: error.code
+        });
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error loading course page',
+            error: error.message 
+        });
     }
 });
 
